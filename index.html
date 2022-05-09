@@ -1,0 +1,428 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link rel="stylesheet" href="pattern.css" />
+
+     <script type='text/javascript'>
+        var global="";
+        var mod='';
+        function getresult(event){
+           var x=document.getElementById('input').value
+                   if(x==""){
+                       var mmmm=0
+                   }else{
+                    var req=new XMLHttpRequest();
+                    var form=document.getElementById('result');
+                    var FD= new FormData(form);
+           req.onreadystatechange=function(){
+               if (req.readyState == 4 && req.status==200) {
+                   var response= JSON.parse(req.responseText);
+                   var input1=response['ticker'];
+                   if(input1!= undefined){
+                    document.getElementById('logo').innerHTML= "<img class='logo1' src= "+ response['logo']+">"
+                    document.getElementById('company').innerHTML=response['name']
+                    document.getElementById('ticker').innerHTML=response['ticker']
+                    document.getElementById('code').innerHTML=response['exchange']
+                    document.getElementById('date').innerHTML=response['ipo']
+                    document.getElementById('category').innerHTML=response['finnhubIndustry']  
+                    global=response['ticker']
+                    
+                   }else{
+                    document.getElementById('error').style.display='block';
+                    document.getElementById('table1').style.display='none';
+                    document.getElementById('navbar').style.display='none';
+                    document.getElementById('t2').style.display='none';
+                    document.getElementById('container').style.display='none';
+                    document.getElementById('block4').style.display='none';
+                   }   
+               }
+           } 
+        };
+
+           var param = new URLSearchParams(FD);
+           param=param.toString();
+           req.open('GET','/test?'+param,true);
+           req.send(null);
+           event.preventDefault();
+    
+       };
+
+
+       function get_result2(event){
+           var req=new XMLHttpRequest();
+           var form=document.getElementById('result');
+           var FD= new FormData(form);
+           req.onreadystatechange=function(){
+               if (req.readyState == 4 && req.status==200) {
+                   var response= JSON.parse(req.responseText);
+                   document.getElementById('STS').innerHTML=response['symbol']
+                   document.getElementById('TD').innerHTML=response['t']
+                   document.getElementById('PCP').innerHTML=response['pc']
+                   document.getElementById('OP').innerHTML=response['o']
+                   document.getElementById('HP').innerHTML=response['h']
+                   document.getElementById('LP').innerHTML=response['l']   
+                   if(response['d']<0){
+                       document.getElementById("CG").innerHTML=response['d']+"<img src='RedArrowDown.png' width='14px' height='14px'>"
+                   }else if(response['d']>0){
+                       document.getElementById("CG").innerHTML=response['d']+"<img src='GreenArrowUp.png' width='14px' height='14px'>"
+                   }
+                   if(response['dp']<0){
+                       document.getElementById("CP").innerHTML=response['dp']+"<img src='RedArrowDown.png' width='14px' height='14px'>"
+                   }else if(response['dp']>0){
+                       document.getElementById("CP").innerHTML=response['dp']+"<img src='GreenArrowUp.png' width='14px' height='14px'>"
+                   }
+                   document.getElementById('strongsell').innerHTML=response['strongSell']
+                   document.getElementById('sell').innerHTML=response['sell']
+                   document.getElementById('hold').innerHTML=response['hold']
+                   document.getElementById('buy').innerHTML=response['buy']
+                   document.getElementById('strongbuy').innerHTML=response['strongBuy']
+
+               }
+           }
+           var param = new URLSearchParams(FD);
+           param=param.toString();
+           req.open('GET','/route2?'+param,true);
+           req.send(null);
+           event.preventDefault();
+        };
+
+      
+
+       function company(){
+           mod=1;
+           document.getElementById('table1').style.display='block';
+           document.getElementById('t2').style.display='none';
+           document.getElementById('container').style.display='none';
+           document.getElementById('block4').style.display='none';
+           document.getElementById('navbar').style.display='block';
+       }
+    
+       function stocksummary(){
+           mod=2;
+           document.getElementById('t2').style.display='block';
+           document.getElementById('table1').style.display='none';
+           document.getElementById('container').style.display='none';
+           document.getElementById('block4').style.display='none';
+       }
+
+       function latestnews(){
+           mod=4;
+           document.getElementById('table1').style.display='none';
+           document.getElementById('t2').style.display='none'; 
+           document.getElementById('container').style.display='none';
+           document.getElementById('block4').style.display='block';
+       }
+
+       function charts(){
+           mod=3;
+           document.getElementById('table1').style.display='none';
+           document.getElementById('t2').style.display='none';
+           document.getElementById('container').style.display='block';
+           document.getElementById('block4').style.display='none';
+
+           Highcharts.getJSON('/route3', function (data) {
+            const d = new Date()
+            dd = d.getMonth()+1
+            datetime = d.getFullYear() +"-0"+ dd+"-"+d.getDate()
+            var stockprice = [],
+                volume = [],
+                dataLength = data.length,
+
+        i = 0;
+
+    for (i; i < dataLength; i += 1) {
+        stockprice.push([
+            data[i][0], // the date
+            data[i][1], // stock price
+        ]);
+
+        volume.push([
+            data[i][0], // the date
+            data[i][2] // the volume
+        ]);
+    }
+
+           Highcharts.stockChart('container', {
+            rangeSelector: {
+            selected: 1
+    },
+
+    title: {
+        text: global+' Stock Price '+datetime
+    },
+    subtitle: {
+            text: '<a href="https://finnhub.io/." target="_blank">Source: Finnhub</a>'},
+
+            yAxis: [{
+            opposite:false,
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Stock Price'
+            },
+            height: '100%',
+            lineWidth: 2,
+            resize: {
+                enabled: true
+            }
+        }, {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Volume'
+            },
+            height: '100%',
+            offset: 0,
+            lineWidth: 2
+        }],
+        plotOptions: {
+                series: {
+                pointWidth: 5
+                }}, 
+
+                rangeSelector: {
+                    selected: 0,
+                    inputEnabled: false,
+                    buttons:[{
+                        type: 'day',
+                        count: 7,
+                        text: '7d',
+                    }, {
+                        type: 'day',
+                        count: 15,
+                        text: '15d',
+                    }, {
+                        type: 'month',
+                        count: 1,
+                        text: '1m',
+                    }, {
+                        type: 'month',
+                        count: 3,
+                        text: '3m',
+                    }, {
+                        type: 'month',
+                        count: 6,
+                        text: '6m',
+                    }]
+                },
+
+    series: [{
+        name: global+' Stock Price',
+        data: stockprice,
+        type: 'area',
+        threshold: null,
+        tooltip: {
+            valueDecimals: 2
+        },
+        fillColor: {
+            linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1
+            },
+            stops: [
+                [0, Highcharts.getOptions().colors[0]],
+                [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+            ]
+        }
+    }, {
+            type: 'column',
+            name: 'Volume',
+            data: volume,
+            yAxis: 1,
+            color: 'grey'
+        }]
+});
+});
+       }
+
+       function get_result4(event){
+           var req=new XMLHttpRequest();
+           var form=document.getElementById('result');
+           var FD= new FormData(form);
+    
+           req.onreadystatechange=function(){
+               if (req.readyState == 4 && req.status==200) {
+                   var response= JSON.parse(req.responseText);
+                   long=Object.keys(response).length;
+           var i=0;
+           for (i; i < long; i += 1){
+               var num=i.toString();
+               var box="<div class='newsbox'>";
+               box +="<div style='background-image: url("+ response[i]["image"]+");background-size: 100px 100px; height:150px; width:150px; background-repeat: no-repeat;'></div>";
+               box +="<p style='font-weight:bold;margin-left:120px; margin-top:-150px';>" + response[i]['headline']+"</p>";
+               box +="<p style='margin-left:120px;'>"+ response[i]['datetime']+ "</p>";
+               box +="<a style='margin-left:120px;' href='"+ response[i]['url']+"' target='_blank'> See Original Post </a></div>";
+               document.getElementById(num).innerHTML=box;
+            
+           }
+               }
+           };
+           
+           var param = new URLSearchParams(FD);
+           param=param.toString();
+           req.open('GET','/route4?'+param,true);
+           req.send(null);
+           event.preventDefault();
+       };
+
+ 
+       
+       function noresult(){
+           mod=0;
+           document.getElementById('table1').style.display='none';
+           document.getElementById('t2').style.display='none';
+           document.getElementById('container').style.display='none';
+           document.getElementById('block4').style.display='none';
+           document.getElementById('navbar').style.display='none';
+           document.getElementById('error').style.display='none';
+       }
+
+       function abc(){
+         if(mod==2){
+          document.getElementById('b2').click()
+         }
+         else if(mod==3){
+          document.getElementById('b3').click()
+         }
+         else if(mod==4){
+          document.getElementById('b4').click()
+         }
+         else{
+          document.getElementById('b1').click()
+         }
+       };
+       
+    </script>
+    
+ </head>
+
+ <body>
+
+    <div class='back'>
+        <h1 class='t1'>Stock Search</h1>
+        <form action='/test' method="get" id='result' name='myform'>
+             <div class="search-wrapper">
+                <input type='image' alt="search" class="circle" onclick="getresult(event);abc();" src="search-solid.svg">
+                <input type="text" id='input' name='CPN'class="search" placeholder="Enter Stock Ticker Symbol"
+                oninvalid="this.setCustomValidity('Please fill out this field')" onput="this.setCustomValidity('')" required>
+                <div class="line"></div>
+                <input type='reset' value="Reset" id='rrr' style="display: none;">
+                <img onclick="noresult(); document.getElementById('rrr').click()" src="times-solid.svg" class="delete">
+            </div>    
+        </form>   
+    </div>
+
+    <div class="navbar" id='navbar' style="display: none;">
+        <button class='button b1' id='b1' onclick="company();getresult(event);">Company</button>
+        <button class='button b2' id='b2' onclick="stocksummary();get_result2(event);">Stock Summary</button>
+        <button class='button b3' id='b3' onclick="charts()">Charts</button>
+        <button class='button b4' id='b4' onclick="latestnews();get_result4(event);">Latest News</button>
+    </div>
+
+    <table class="table1" id='table1' style="display: none;"> 
+        <tr>
+            <td id=logo colspan="2"></td>
+        </tr>
+        <tr>
+            <th>Company Name</th>
+            <td id='company'></td>
+        </tr>
+        <tr>
+            <th>Stock Ticker Symbol</th>
+            <td id='ticker'></td>
+        </tr>
+        <tr>
+            <th>Stock Exchange Code</th>
+            <td id='code'></td>
+        </tr>
+        <tr>
+            <th>Company IPO Date</th>
+            <td id='date'></td>
+        </tr>
+        <tr>
+            <th>Category</th>
+            <td id='category'></td>
+        </tr>
+    </table>
+
+    <div class="t2" id='t2' style="display: none;">
+        <table class="table2" id='table2'> 
+            <tr>
+                <th>Stock Ticker Symbol</th>
+                <td id='STS'></td>
+            </tr>
+            <tr>
+                <th>Trading Day</th>
+                <td id='TD'></td>
+            </tr>
+            <tr>
+                <th>Previous Closing Price</th>
+                <td id='PCP'></td>
+            </tr>
+            <tr>
+                <th>Opening Price</th>
+                <td id='OP'></td>
+            </tr>
+            <tr>
+                <th>High Price</th>
+                <td id='HP'></td>
+            </tr>
+            <tr>
+                <th>Low Price</th>
+                <td id='LP'></td>
+            </tr>
+            <tr>
+                <th>Change</th>
+                <td id='CG'></td>
+            </tr>
+            <tr>
+                <th>Change Percent</th>
+                <td id='CP'></td>
+            </tr>
+            
+        </table>
+        <div class="colorbox" style="margin-left: 525px;margin-top:600px;display: inline-block;">
+            <table style="border-collapse:collapse;height: 50px;">
+                <tr>
+                    <td id='text1' style="color: rgb(218, 63, 64); width: 50px;border: none;">Strong Sell</td>
+                    <td id='strongsell' style="background-color: rgb(218, 63, 64);width: 50px;border: none;"></td>
+                    <td id='sell' style="background-color: rgb(167, 99, 79);width: 50px;border: none;"></td>
+                    <td id='hold' style="background-color: rgb(125, 147, 98);width: 50px;border: none;"></td>
+                    <td id='buy' style="background-color: rgb(105, 118, 198);width: 50px;border: none;"></td>
+                    <td id='strongbuy' style="background-color:rgb(117, 250, 141);width: 50px;border: none;"></td>
+                    <td id='text2' style="color: rgb(117, 250, 141);width: 50px;border: none;">Strong Buy</td>
+                </tr>
+            </table>
+        </div>
+        <div class='recommend'><p style="text-align: center;font-size: 20px; margin-left: 650px;display: inline-block;">Recommendation Trends</p></div>
+    </div>
+
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script> 
+    <div class="container" id="container" style="display: none;"></div>
+ 
+    
+    <div id="block4" style="display: none;margin-top: 250px; margin-left: -5px;">
+        <div id='0'></div>
+        <div id='1'></div>
+        <div id='2'></div>
+        <div id='3'></div>
+        <div id='4'></div>
+    </div> 
+
+    <div id='error' class='error' style="display: none;">Error : No record has been found, please unter a valid symbol</div>
+
+    
+ </body>
+ </html>
